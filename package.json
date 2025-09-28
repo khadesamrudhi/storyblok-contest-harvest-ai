@@ -1,0 +1,16 @@
+{
+  "name": "contentharvest-ai-root",
+  "version": "1.0.0",
+  "description": "Root package for ContentHarvest AI project",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "start": "echo No root start script",
+    "install-all": "npm --workspaces install"
+  },
+  "author": "",
+  "license": "ISC"
+}
