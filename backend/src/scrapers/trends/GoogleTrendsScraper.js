@@ -101,6 +101,15 @@ class GoogleTrendsScraper {
       regionalInterest
     };
   }
+
+  // Convenience instance wrappers used by TrendScraper fallbacks
+  async getDailyTrends(geo = 'US') {
+    return await getDailyTrends(geo);
+  }
+
+  async getRealtimeTrends(geo = 'US', category = 'all') {
+    return await getRealtimeTrends(geo, category);
+  }
 }
 
 module.exports = {

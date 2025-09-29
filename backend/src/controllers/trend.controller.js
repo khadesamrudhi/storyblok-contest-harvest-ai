@@ -23,16 +23,21 @@ module.exports = {
       if (options.save === true) {
         try {
           await supabaseClient.initialize();
-          const userId = req.user?.id || null;
+          const category = options.category || 'general';
           for (const t of (result.top || []).slice(0, 20)) {
-            await supabaseClient.createTrend({
-              user_id: userId,
+            // Map analyzer output to DB columns
+            const trendRow = {
               keyword: t.keyword,
-              sources: t.sources,
-              avg_score: t.avg_score,
-              popularity: t.popularity,
+              category,
+              trend_score: (typeof t.avg_score === 'number') ? t.avg_score : (typeof t.score === 'number' ? t.score : null),
+              data: {
+                sources: t.sources || [],
+                popularity: t.popularity ?? undefined,
+                raw: t
+              },
               created_at: new Date().toISOString()
-            });
+            };
+            await supabaseClient.createTrend(trendRow);
           }
         } catch (e) {
           logger.warn('Failed to save trends', e);

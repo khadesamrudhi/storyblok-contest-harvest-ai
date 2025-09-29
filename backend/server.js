@@ -2,6 +2,7 @@
 const express = require('express');
 const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
+const cors = require('cors');
 const path = require('path');
 const { createServer } = require('http');
 const { Server } = require('socket.io');
@@ -34,6 +35,9 @@ const logger = require('./src/utils/logger');
 const competitorRoutes = require('./src/routes/competitor.routes');
 const scrapingRoutes = require('./src/routes/scraping.routes');
 const trendRoutes = require('./src/routes/trend.routes');
+const assetRoutes = require('./src/routes/asset.routes');
+const insightsRoutes = require('./src/routes/insights.routes');
+const storyblokRoutes = require('./src/routes/storyblok.routes');
 
 // Create app/server and Socket.IO
 const app = express();
@@ -49,12 +53,30 @@ const io = new Server(server, {
 app.use(helmet());
 app.use(express.json({ limit: '10mb' }));
 app.use(cookieParser());
+// Allow frontend on localhost:3000 by default
+const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:3000')
+  .split(',')
+  .map(s => s.trim())
+  .filter(Boolean);
+
+app.use(cors({
+  origin: allowedOrigins,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  optionsSuccessStatus: 204
+}));
+// Ensure preflight is handled for all routes
+// Note: Do not register a wildcard OPTIONS route on Express 5; handled by CORS above
 app.use(loggingMiddleware);
 
 // Routes
 app.use('/api/competitors', competitorRoutes);
 app.use('/api/scraping', scrapingRoutes);
 app.use('/api/trends', trendRoutes);
+app.use('/api/assets', assetRoutes);
+app.use('/api/insights', insightsRoutes);
+app.use('/api/storyblok', storyblokRoutes);
 
 // Health endpoint
 app.get('/health', (req, res) => res.json({ ok: true }));
@@ -65,7 +87,7 @@ async function startServer() {
     // Initialize database connection
     await initializeDatabase();
     logger.info('Database connected successfully');
-    
+
     // Scraping scheduler disabled for this environment; proceeding without Redis/Bull
     logger.warn('Scraping scheduler is disabled (no Redis).');
     // Setup WebSocket handlers

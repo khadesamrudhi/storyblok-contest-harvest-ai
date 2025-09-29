@@ -37,6 +37,44 @@ class TrendScraper {
                 regional_interest: data.regionalInterest
               });
             }
+          } else {
+            // Fallback: use realtime and daily trends when no keywords are provided
+            const geo = options.geo || 'US';
+            const category = options.category || 'all';
+            try {
+              const rt = await this.googleTrendsScraper.getRealtimeTrends?.(geo, category);
+              if (Array.isArray(rt)) {
+                for (const item of rt.slice(0, options.limit || 20)) {
+                  out.push({
+                    keyword: item.title,
+                    source: 'google_trends',
+                    trend_score: this._scoreRealtime(item),
+                    articles: item.articles,
+                    entity_names: item.entityNames || []
+                  });
+                }
+              }
+            } catch (e) {
+              logger.warn('Google realtime trends error', e);
+            }
+
+            try {
+              const daily = await this.googleTrendsScraper.getDailyTrends?.(geo);
+              if (Array.isArray(daily)) {
+                for (const item of daily.slice(0, options.limit || 20)) {
+                  out.push({
+                    keyword: item.title,
+                    source: 'google_trends',
+                    trend_score: this._scoreDaily(item),
+                    formatted_traffic: item.formattedTraffic,
+                    articles: item.articles,
+                    related_queries: item.relatedQueries
+                  });
+                }
+              }
+            } catch (e) {
+              logger.warn('Google daily trends error', e);
+            }
           }
         } catch (e) {
           logger.warn('Google trends scraping error', e);
@@ -109,6 +147,9 @@ class TrendScraper {
         }
       }
 
+      if (!out.length) {
+        logger.info('TrendScraper.scrapeTrends: no results from sources', { sources, options });
+      }
       return { trends: out, scrapedAt: new Date().toISOString(), sources };
     } catch (error) {
       logger.error('TrendScraper.scrapeTrends failed', error);
@@ -140,6 +181,29 @@ class TrendScraper {
     const titleLen = (article.title || '').length;
     const lengthScore = Math.min(100, titleLen * 2);
     return Math.round((recency * 0.7 + lengthScore * 0.3) * 100) / 100;
+  }
+
+  _scoreRealtime(item) {
+    // Simple heuristic: more articles/entities -> higher score
+    const articles = Array.isArray(item.articles) ? item.articles.length : 0;
+    const entities = Array.isArray(item.entityNames) ? item.entityNames.length : 0;
+    return Math.round((articles * 10 + entities * 5) * 100) / 100;
+  }
+
+  _scoreDaily(item) {
+    // Use formattedTraffic like "200K+" => 200000
+    const traffic = this._parseTraffic(item.formattedTraffic);
+    return Math.round((traffic / 1000) * 100) / 100; // scale down
+  }
+
+  _parseTraffic(s) {
+    if (!s || typeof s !== 'string') return 0;
+    const m = s.trim().match(/([0-9,.]+)\s*([kKmMbB]?)/);
+    if (!m) return 0;
+    let num = parseFloat(m[1].replace(/,/g, ''));
+    const unit = (m[2] || '').toLowerCase();
+    if (unit === 'k') num *= 1e3; else if (unit === 'm') num *= 1e6; else if (unit === 'b') num *= 1e9;
+    return num;
   }
 }
 

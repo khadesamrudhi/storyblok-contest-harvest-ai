@@ -41,6 +41,25 @@ async function runDirect({ type, url, userId, options = {} }) {
       } finally {
         await scraper.closeBrowser();
       }
+      // Persist a minimal competitor record for demo mode
+      try {
+        await supabaseClient.initialize();
+        const domain = new URL(url).hostname;
+        const name = (results && results.metadata && (results.metadata.ogTitle || results.metadata.title)) || domain;
+        const description = results && results.metadata && (results.metadata.description || (results.headings && results.headings[0]));
+        await supabaseClient.createCompetitor({
+          user_id: userId || null,
+          name,
+          website: url,
+          status: 'completed',
+          last_scraped: new Date().toISOString(),
+          metadata: { ...(results?.metadata || {}), summary: description || null },
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        });
+      } catch (e) {
+        logger.warn('Persist competitor failed (demo mode)', e);
+      }
     } else if (type === 'content_analysis') {
       const scraper = new ContentScraper();
       try {
@@ -54,6 +73,35 @@ async function runDirect({ type, url, userId, options = {} }) {
         results = await scraper.scrapeAssets(url, options);
       } finally {
         await scraper.closeBrowser();
+      }
+      // Persist a handful of discovered images as assets for demo mode
+      try {
+        await supabaseClient.initialize();
+        const images = Array.isArray(results && results.images) ? results.images.slice(0, 20) : [];
+        for (const img of images) {
+          const publicUrl = img.url || img.src || img.link;
+          if (!publicUrl) continue;
+          await supabaseClient.createAsset({
+            user_id: userId || null,
+            name: img.alt || img.title || (publicUrl.split('/').pop() || 'image'),
+            type: 'image',
+            url: publicUrl,
+            file_path: null,
+            file_size: null,
+            mime_type: null,
+            width: img.width || null,
+            height: img.height || null,
+            alt_text: img.alt || null,
+            description: null,
+            tags: null,
+            source_url: url,
+            metadata: img.metadata || {},
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          });
+        }
+      } catch (e) {
+        logger.warn('Persist assets failed (demo mode)', e);
       }
     } else if (type === 'trend_monitoring') {
       const scraper = new TrendScraper();
@@ -78,7 +126,7 @@ async function runDirect({ type, url, userId, options = {} }) {
           100,
           'Scraping completed successfully'
         );
-      } catch {}
+      } catch { }
     }
 
     return { jobId: job.id, results };
@@ -98,7 +146,7 @@ async function runDirect({ type, url, userId, options = {} }) {
           0,
           `Scraping failed: ${err.message}`
         );
-      } catch {}
+      } catch { }
     }
     throw err;
   }

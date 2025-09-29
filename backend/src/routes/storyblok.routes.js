@@ -10,6 +10,9 @@ router.get('/stories', controller.listStories);
 router.get('/stories/:slug', controller.getStory);
 router.get('/components', controller.getComponents);
 
+// Synchronize stories and referenced assets (secure; uses server-side tokens)
+router.post('/sync', controller.syncContent);
+
 // Management API writes (require management token + space id)
 router.post('/stories', controller.createStory);
 router.put('/stories/:id', controller.updateStory);

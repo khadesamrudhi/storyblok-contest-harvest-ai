@@ -12,7 +12,15 @@ module.exports = {
     try {
       const userId = req.user?.id;
       await supabaseClient.initialize();
-      const data = await supabaseClient.getCompetitorsByUserId(userId);
+      const { stale_hours, stale_days, limit } = req.query || {};
+      let data;
+      if (stale_hours || stale_days) {
+        const hours = parseInt(stale_hours || 0, 10) + (parseInt(stale_days || 0, 10) * 24);
+        const cutoff = new Date(Date.now() - (isFinite(hours) ? hours : 0) * 60 * 60 * 1000).toISOString();
+        data = await supabaseClient.getStaleCompetitors(userId, cutoff, limit ? parseInt(limit, 10) : 50);
+      } else {
+        data = await supabaseClient.getCompetitorsByUserId(userId);
+      }
       res.json({ success: true, data });
     } catch (err) {
       logger.error('List competitors failed', err);
@@ -158,7 +166,15 @@ class CompetitorController {
   async getCompetitors(req, res) {
     try {
       const userId = req.user.id;
-      const competitors = await supabaseClient.getCompetitorsByUserId(userId);
+      const { stale_hours, stale_days, limit } = req.query || {};
+      let competitors;
+      if (stale_hours || stale_days) {
+        const hours = parseInt(stale_hours || 0, 10) + (parseInt(stale_days || 0, 10) * 24);
+        const cutoff = new Date(Date.now() - (isFinite(hours) ? hours : 0) * 60 * 60 * 1000).toISOString();
+        competitors = await supabaseClient.getStaleCompetitors(userId, cutoff, limit ? parseInt(limit, 10) : 50);
+      } else {
+        competitors = await supabaseClient.getCompetitorsByUserId(userId);
+      }
 
       res.json({
         success: true,

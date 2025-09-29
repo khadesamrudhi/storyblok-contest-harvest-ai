@@ -14,7 +14,7 @@ class BaseScraper {
       waitUntil: 'networkidle2',
       ...options
     };
-    
+
     this.browser = null;
     this.page = null;
   }
@@ -23,6 +23,8 @@ class BaseScraper {
     try {
       this.browser = await puppeteer.launch({
         headless: this.options.headless,
+        protocolTimeout: this.options.timeout + 10000,
+        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
         args: [
           '--no-sandbox',
           '--disable-setuid-sandbox',
@@ -30,7 +32,7 @@ class BaseScraper {
           '--disable-accelerated-2d-canvas',
           '--no-first-run',
           '--no-zygote',
-          '--single-process',
+          // Avoid single-process on Windows; can cause net::ERR_SOCKET_NOT_CONNECTED
           '--disable-gpu'
         ]
       });
@@ -38,7 +40,7 @@ class BaseScraper {
       this.page = await this.browser.newPage();
       await this.page.setUserAgent(this.options.userAgent);
       await this.page.setViewport({ width: 1366, height: 768 });
-      
+
       // Block unnecessary resources to speed up scraping
       await this.page.setRequestInterception(true);
       this.page.on('request', (req) => {
@@ -167,16 +169,16 @@ class BaseScraper {
 
   extractMetadata($) {
     const metadata = {};
-    
+
     // Title
-    metadata.title = $('title').text().trim() || 
-                    $('meta[property="og:title"]').attr('content') ||
-                    $('meta[name="twitter:title"]').attr('content') || '';
+    metadata.title = $('title').text().trim() ||
+      $('meta[property="og:title"]').attr('content') ||
+      $('meta[name="twitter:title"]').attr('content') || '';
 
     // Description
     metadata.description = $('meta[name="description"]').attr('content') ||
-                          $('meta[property="og:description"]').attr('content') ||
-                          $('meta[name="twitter:description"]').attr('content') || '';
+      $('meta[property="og:description"]').attr('content') ||
+      $('meta[name="twitter:description"]').attr('content') || '';
 
     // Keywords
     metadata.keywords = $('meta[name="keywords"]').attr('content') || '';
@@ -221,10 +223,10 @@ class BaseScraper {
   }
 
   isValidUrl(string) {
-      new URL(string);
-      return true;
-    } catch (_) {
-      return false;
-    }
+    new URL(string);
+    return true;
+  } catch(_) {
+    return false;
+  }
 }
 module.exports = BaseScraper;

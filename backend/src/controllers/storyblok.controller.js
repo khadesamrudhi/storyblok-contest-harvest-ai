@@ -3,6 +3,8 @@
 const axios = require('axios');
 const logger = require('../utils/logger');
 const { config, fetchStory } = require('../config/storyblok');
+const contentSync = require('../integrations/storyblok/ContentSync');
+const assetSync = require('../integrations/storyblok/AssetSync');
 
 function getManagementClient() {
   const token = process.env.STORYBLOK_MANAGEMENT_TOKEN || process.env.STORYBLOK_PERSONAL_TOKEN;
@@ -122,6 +124,46 @@ module.exports = {
       res.json({ success: true });
     } catch (err) {
       logger.error('storyblok.webhook failed', err);
+      next(err);
+    }
+  }
+  ,
+
+  // POST /api/storyblok/sync
+  async syncContent(req, res, next) {
+    try {
+      const { spaceId, starts_with, per_page, version, region, publicToken, apiToken, skipAssets } = req.body || {};
+      if (spaceId) process.env.STORYBLOK_SPACE_ID = String(spaceId);
+      if (region) process.env.STORYBLOK_REGION = String(region);
+      // Allow passing a PUBLIC token from the client in dev only (no secrets!)
+      if (publicToken && process.env.NODE_ENV !== 'production') {
+        process.env.STORYBLOK_PUBLIC_TOKEN = String(publicToken);
+        // Ensure config module can see updates in long-lived process
+        require('dotenv').config();
+      }
+      if (apiToken && process.env.NODE_ENV !== 'production') {
+        process.env.STORYBLOK_API_TOKEN = String(apiToken);
+        require('dotenv').config();
+      }
+
+      const stories = await contentSync.fetchAllStories({
+        starts_with,
+        perPage: per_page || 25,
+        version: version || config.version
+      });
+
+      let imported = [];
+      if (skipAssets !== true) {
+        try {
+          imported = await assetSync.syncAllAssets({ starts_with, perPage: 25, version: version || config.version });
+        } catch (e) {
+          logger.warn('Asset sync skipped/failed', e);
+        }
+      }
+
+      res.json({ success: true, totalStories: stories.length, importedAssets: imported.length, sample: stories.slice(0, 3) });
+    } catch (err) {
+      logger.error('storyblok.syncContent failed', err);
       next(err);
     }
   }
