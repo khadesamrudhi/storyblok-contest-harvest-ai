@@ -2,9 +2,11 @@
 
 const { supabaseClient } = require('../integrations/storage/SupabaseClient');
 const CompetitorAnalyzer = require('../ai/analyzers/CompetitorAnalyzer');
+const { WebsiteScraper } = require('../scrapers/competitors/WebsiteScraper');
 const logger = require('../utils/logger');
 
 const analyzer = new CompetitorAnalyzer();
+const websiteScraper = new WebsiteScraper();
 
 module.exports = {
   // GET /api/competitors
@@ -61,9 +63,72 @@ module.exports = {
   // POST /api/competitors/analyze
   async analyze(req, res, next) {
     try {
-      const payload = req.body || {};
-      const result = await analyzer.analyze(payload);
-      res.json({ success: true, result });
+      const userId = req.user?.id;
+      await supabaseClient.initialize();
+      const { website } = req.body || {};
+
+      let analysisInput = req.body || {};
+
+      // If a website is provided, do a live scrape and map to analyzer shape
+      let scraped = null;
+      if (website) {
+        try {
+          scraped = await websiteScraper.scrapeWebsite(website);
+        } catch (scrapeErr) {
+          logger.error('Website scrape failed in analyze()', scrapeErr);
+          return res.status(400).json({ success: false, message: 'Failed to scrape the provided website', error: scrapeErr.message });
+        }
+
+        // Map WebsiteScraper result to CompetitorAnalyzer expected input
+        const pageItem = {
+          url: scraped.url,
+          metadata: scraped.metadata,
+          headings: scraped.headings,
+          images: scraped.images,
+          links: scraped.links
+        };
+
+        const contentItem = {
+          title: scraped.metadata?.title || scraped.url,
+          url: scraped.url,
+          content: scraped.content || ''
+        };
+
+        analysisInput = {
+          website: scraped.url,
+          pages: [pageItem],
+          content: [contentItem],
+          social_links: scraped.socialLinks || {}
+        };
+      }
+
+      const result = await analyzer.analyze(analysisInput);
+
+      // Persist analysis for history if possible
+      try {
+        await supabaseClient.createAnalysis({
+          id: require('uuid').v4(),
+          user_id: userId || null,
+          type: 'competitor_analysis',
+          competitor_id: null,
+          results: {
+            analysis: result,
+            scraped_summary: scraped ? {
+              url: scraped.url,
+              technologies: scraped.technologies,
+              socialLinks: scraped.socialLinks,
+              contactInfo: scraped.contactInfo,
+              scrapedAt: scraped.scrapedAt
+            } : null
+          },
+          created_at: new Date().toISOString()
+        });
+      } catch (saveErr) {
+        logger.warn('Failed to persist competitor analysis', saveErr);
+        // non-fatal
+      }
+
+      res.json({ success: true, result, scraped });
     } catch (err) {
       logger.error('Analyze competitor failed', err);
       next(err);

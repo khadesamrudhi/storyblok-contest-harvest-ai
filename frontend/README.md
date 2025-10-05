@@ -1,70 +1,105 @@
-# Getting Started with Create React App
+# ContentHarvest
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+ContentHarvest is an AI-powered content intelligence platform that helps you monitor competitors, analyze content performance, discover trends, and optimize your content strategy in real time.
 
-## Available Scripts
+## Features
 
-In the project directory, you can run:
+- **Unified Intelligence Dashboard:**  
+  View real-time analytics, competitor insights, asset tracking, and trend discovery in one place.
 
-### `npm start`
+- **Smart Competitor Analysis:**  
+  Automatically scrape competitor websites, identify content gaps, and get trending topic recommendations.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- **Content Performance Predictor:**  
+  Predict how well your content will perform using AI-driven analysis.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+- **Trend Discovery:**  
+  Stay ahead with real-time market and content trends.
 
-### `npm test`
+- **Seamless Integrations:**  
+  Connect with popular CMS, social media, and analytics tools.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+---
 
-### `npm run build`
+## Getting Started
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### 1. Clone the Repository
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```bash
+git clone https://github.com/yourusername/contentharvest.git
+cd contentharvest
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### 2. Install Dependencies
 
-### `npm run eject`
+#### Backend
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+```bash
+cd backend
+npm install
+```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+#### Frontend
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+```bash
+cd ../frontend
+npm install
+```
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+### 3. Set Up Environment Variables
 
-## Learn More
+- Copy the `.env.example` file in the `backend` folder to `.env` and fill in your API keys and configuration.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+### 4. Run the Project
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+#### Start the Backend
 
-### Code Splitting
+```bash
+cd backend
+npm start
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+#### Start the Frontend
 
-### Analyzing the Bundle Size
+Open a new terminal window:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+```bash
+cd frontend
+npm start
+```
 
-### Making a Progressive Web App
+The frontend will run on [http://localhost:3000](http://localhost:3000).
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+---
 
-### Advanced Configuration
+## Project Structure
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+```
+contentharvest/
+├── backend/      # Node.js/Express backend (APIs, scraping, analysis)
+├── frontend/     # React frontend (dashboard, UI)
+└── README.md
+```
 
-### Deployment
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+## How It Works
 
-### `npm run build` fails to minify
+- **Dashboard:**  
+  See a unified view of your competitors, assets, trends, and predictions.  
+  ![Dashboard Screenshot](./screenshots/dashboard.png)
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+- **Competitor Analysis:**  
+  Add competitor websites. The system scrapes their content, analyzes strategies, and highlights gaps and trending topics.
+
+- **Content Insights:**  
+  Paste your content to get AI-powered performance predictions and optimization tips.
+
+---
+
+## Requirements
+
+- Node.js (v16+ recommended)
+- npm
+
+
