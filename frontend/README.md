@@ -82,8 +82,6 @@ contentharvest/
 └── README.md
 ```
 
----
-
 ## Requirements
 
 - Node.js (v16+ recommended)
