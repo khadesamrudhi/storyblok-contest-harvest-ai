@@ -82,30 +82,6 @@ contentharvest/
 └── README.md
 ```
 
----
-## How It Works
-
-- **Dashboard:**  
-  See a unified view of your competitors, assets, trends, and predictions.  
-  ![Dashboard Screenshot](./screenshots/dashboard.png)
-
-- **Competitor Analysis:**  
-  Add competitor websites. The system scrapes their content, analyzes strategies, and highlights gaps and trending topics.
-
-- **Content Insights:**  
-  Paste your content to get AI-powered performance predictions and optimization tips.
-
-- **Assets:**  
-  Track and manage all content assets (articles, blogs, videos, PDFs, social posts) in one place.
-  - Ingestion: manual add, sitemap/RSS, CMS webhooks.
-  - Metadata: title, URL, owner, channel, tags, topics, stage, publish date.
-  - Tracking: performance metrics (views, CTR, shares), canonical mapping, deduplication.
-  - Actions: tag, archive, link to campaigns, assign owner, set review date.
-  - Versioning: keep edit history and diffs.
-  - UI: filter/search, saved views, bulk actions, CSV export.
-  - API (examples): `GET /api/assets`, `POST /api/assets`, `PATCH /api/assets/:id`.
-   
----
 
 ## Requirements
 
