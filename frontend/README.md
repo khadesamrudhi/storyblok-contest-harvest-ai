@@ -16,10 +16,11 @@ ContentHarvest is an AI-powered content intelligence platform that helps you mon
 - **Trend Discovery:**  
   Stay ahead with real-time market and content trends.
 
+- **Assets:**  
+  Track and manage content assets (posts) with simple ingestion, key metadata, and APIs (`GET/POST/PATCH /api/assets`).
+
 - **Seamless Integrations:**  
   Connect with popular CMS, social media, and analytics tools.
-
----
 
 ## Getting Started
 
@@ -83,23 +84,8 @@ contentharvest/
 
 ---
 
-## How It Works
-
-- **Dashboard:**  
-  See a unified view of your competitors, assets, trends, and predictions.  
-  ![Dashboard Screenshot](./screenshots/dashboard.png)
-
-- **Competitor Analysis:**  
-  Add competitor websites. The system scrapes their content, analyzes strategies, and highlights gaps and trending topics.
-
-- **Content Insights:**  
-  Paste your content to get AI-powered performance predictions and optimization tips.
-
----
-
 ## Requirements
 
 - Node.js (v16+ recommended)
 - npm
-
 
